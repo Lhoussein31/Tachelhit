@@ -227,7 +227,7 @@ const THEMES = {
 };
 
 /* =====================================================================
-   PERSONNES POUR LES THÈMES STANDARD (aoriste, accompli, etc.)
+   PERSONNES POUR LES THÈMES STANDARD
    ===================================================================== */
 const PERSONNES = {
   "s1":  { label: "1ʳᵉ pers. sing.",      cle: "s1", genre: null },
@@ -243,10 +243,7 @@ const PERSONNES = {
 };
 
 /* =====================================================================
-   PERSONNES POUR L'IMPÉRATIF (structure spécifique)
-   ---------------------------------------------------------------------
-   L'impératif ne concerne que la 2ᵉ personne (tu / vous).
-   Structure du dataset : { s: {m, f}, p: {m1, m2, f} }
+   PERSONNES POUR L'IMPÉRATIF
    ===================================================================== */
 const PERSONNES_IMPERATIF = {
   "s.m":  { label: "2ᵉ pers. sing. (m)",                cle: "s", genre: "m"  },
@@ -277,20 +274,39 @@ function translitterer(texteTifinagh) {
 }
 
 /* =====================================================================
-   EXTRACTION DE LA TRADUCTION FRANÇAISE
+   EXTRACTION RÉCURSIVE DES TEXTES
+   ---------------------------------------------------------------------
+   Cette fonction parcourt un objet JSON en profondeur et extrait
+   TOUTES les chaînes de caractères qu'il contient, peu importe
+   leur niveau d'imbrication (ex: fr -> fr1 -> 1.1 -> "courir").
+   ===================================================================== */
+function extraireTextes(obj) {
+  if (typeof obj === "string") {
+    return [obj];
+  }
+  if (Array.isArray(obj)) {
+    return obj.flatMap(item => extraireTextes(item));
+  }
+  if (typeof obj === "object" && obj !== null) {
+    return Object.values(obj).flatMap(val => extraireTextes(val));
+  }
+  return [];
+}
+
+/* =====================================================================
+   FONCTIONS DE TRADUCTION (CORRIGÉES)
    ===================================================================== */
 function getTraductionFR(verbe) {
   if (!verbe || !verbe.fr) return "";
-  if (typeof verbe.fr === "string") return verbe.fr;
-  const valeurs = Object.values(verbe.fr).filter(v => typeof v === "string");
-  return valeurs.join(" ; ");
+  const valeurs = extraireTextes(verbe.fr);
+  // Filtrer les chaînes vides et joindre avec un point-virgule
+  return valeurs.filter(v => v.trim() !== "").join(" ; ");
 }
 
 function getTraductionAR(verbe) {
   if (!verbe || !verbe.ar) return "";
-  if (typeof verbe.ar === "string") return verbe.ar;
-  const valeurs = Object.values(verbe.ar).filter(v => typeof v === "string");
-  return valeurs.join(" ; ");
+  const valeurs = extraireTextes(verbe.ar);
+  return valeurs.filter(v => v.trim() !== "").join(" ; ");
 }
 
 /* =====================================================================
@@ -477,9 +493,6 @@ function afficherConjugaison(verbe) {
 
 /* =====================================================================
    CONSTRUCTION DU TABLEAU
-   ---------------------------------------------------------------------
-   Détecte si le thème est un impératif (structure à 5 formes) ou
-   un thème standard (structure à 10 personnes).
    ===================================================================== */
 function construireTableau(verbe, theme) {
   const data = verbe[theme];
