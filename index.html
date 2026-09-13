@@ -347,22 +347,51 @@ const THEMES = {
 };
 
 /* =====================================================================
-   LES 10 PERSONNES GRAMMATICALES
+   LES 10 PERSONNES GRAMMATICALES (CONFORMES AU DATASET)
    ---------------------------------------------------------------------
-   Le tachelhit distingue le genre à la 2ᵉ et 3ᵉ personne.
+   Le dataset utilise les clés : s1, s2, s3, p1, p2, p3.
+   Le genre est indiqué à l'intérieur de chaque clé.
    ===================================================================== */
 const PERSONNES = {
-  "s1":  { label: "1ʳᵉ pers. sing." },
-  "s2m": { label: "2ᵉ pers. sing. (m)" },
-  "s2f": { label: "2ᵉ pers. sing. (f)" },
-  "s3m": { label: "3ᵉ pers. sing. (m)" },
-  "s3f": { label: "3ᵉ pers. sing. (f)" },
-  "p1":  { label: "1ʳᵉ pers. plur." },
-  "p2m": { label: "2ᵉ pers. plur. (m)" },
-  "p2f": { label: "2ᵉ pers. plur. (f)" },
-  "p3m": { label: "3ᵉ pers. plur. (m)" },
-  "p3f": { label: "3ᵉ pers. plur. (f)" }
+  "s1":  { label: "1ʳᵉ pers. sing.",      cle: "s1", genre: null },
+  "s2m": { label: "2ᵉ pers. sing. (m)",   cle: "s2", genre: "m" },
+  "s2f": { label: "2ᵉ pers. sing. (f)",   cle: "s2", genre: "f" },
+  "s3m": { label: "3ᵉ pers. sing. (m)",   cle: "s3", genre: "m" },
+  "s3f": { label: "3ᵉ pers. sing. (f)",   cle: "s3", genre: "f" },
+  "p1":  { label: "1ʳᵉ pers. plur.",      cle: "p1", genre: null },
+  "p2m": { label: "2ᵉ pers. plur. (m)",   cle: "p2", genre: "m" },
+  "p2f": { label: "2ᵉ pers. plur. (f)",   cle: "p2", genre: "f" },
+  "p3m": { label: "3ᵉ pers. plur. (m)",   cle: "p3", genre: "m" },
+  "p3f": { label: "3ᵉ pers. plur. (f)",   cle: "p3", genre: "f" }
 };
+
+/* =====================================================================
+   TABLE DE CORRESPONDANCE TIFINAGH → LATIN
+   ---------------------------------------------------------------------
+   Basée sur les tables de l'IRCAM et de l'Unicode.
+   Source : https://github.com/Anir-Ln/Tifinagh-Latin-transliteration
+   ===================================================================== */
+const TIFINAGH_VERS_LATIN = {
+  'ⴰ': 'a',  'ⴱ': 'b',  'ⴳ': 'ɡ',  'ⴷ': 'd',  'ⴻ': 'e',  'ⴼ': 'f',
+  'ⴽ': 'k',  'ⵀ': 'h',  'ⵃ': 'ḥ',  'ⵄ': 'ɛ',  'ⵅ': 'x',  'ⵇ': 'q',
+  'ⵉ': 'i',  'ⵊ': 'j',  'ⵍ': 'l',  'ⵎ': 'm',  'ⵏ': 'n',  'ⵓ': 'u',
+  'ⵔ': 'r',  'ⵕ': 'ṛ',  'ⵖ': 'ɣ',  'ⵙ': 's',  'ⵚ': 'ṣ',  'ⵛ': 'c',
+  'ⵜ': 't',  'ⵟ': 'ṭ',  'ⵡ': 'w',  'ⵢ': 'y',  'ⵣ': 'z',  'ⵥ': 'ẓ',
+  'ⵯ': 'ʷ',  'ⵞ': 'č',  'ⴹ': 'ḍ',  'ⵠ': 'v',  'ⵒ': 'p'
+};
+
+/**
+ * Convertit une chaîne en Tifinagh vers sa translittération latine.
+ * @param {string} texteTifinagh - La chaîne en écriture Tifinagh.
+ * @returns {string} La chaîne translittérée en alphabet latin.
+ */
+function translitterer(texteTifinagh) {
+  if (!texteTifinagh) return "";
+  return texteTifinagh
+    .split('')
+    .map(car => TIFINAGH_VERS_LATIN[car] || car)
+    .join('');
+}
 
 /* =====================================================================
    CHARGEMENT DU DATASET
@@ -406,6 +435,7 @@ async function chargerDataset() {
    AFFICHAGE DE L'INDEX
    ---------------------------------------------------------------------
    Chaque entrée affiche la forme latine ET la forme tifinagh.
+   La forme latine est générée automatiquement à partir du Tifinagh.
    ===================================================================== */
 function afficherListeIndex() {
   const conteneur = document.getElementById("verbe-liste");
@@ -419,9 +449,10 @@ function afficherListeIndex() {
     }
     div.dataset.index = index;
 
-    // Récupération des formes pour l'index
-    const latin = verbe.latin || verbe.transliteration || verbe.lemma || "?";
-    const tifinagh = verbe.tifinagh || verbe.lemma || "";
+    // La forme Tifinagh est le lemme du verbe
+    const tifinagh = verbe.lemma || "";
+    // La forme latine est générée automatiquement
+    const latin = translitterer(tifinagh);
 
     div.innerHTML = `
       <span class="ligne-latin">${latin}</span>
@@ -459,12 +490,9 @@ function filtrerVerbes() {
     VERBES_FILTRES = [...TOUS_LES_VERBES];
   } else {
     VERBES_FILTRES = TOUS_LES_VERBES.filter(v => {
-      const lemma = (v.lemma || "").toLowerCase();
-      const latin = (v.latin || "").toLowerCase();
-      const racine = (v.racine || "").toLowerCase();
-      const tifinagh = (v.tifinagh || "").toLowerCase();
-      return lemma.includes(requete) || latin.includes(requete)
-          || racine.includes(requete) || tifinagh.includes(requete);
+      const tifinagh = (v.lemma || "").toLowerCase();
+      const latin = translitterer(v.lemma || "").toLowerCase();
+      return tifinagh.includes(requete) || latin.includes(requete);
     });
   }
   afficherListeIndex();
@@ -487,11 +515,9 @@ function selectionnerVerbe(verbe) {
 function afficherConjugaison(verbe) {
   const zone = document.getElementById("zone-resultat");
 
-  const lemma = verbe.lemma || verbe.racine || "Verbe inconnu";
-  const latin = verbe.latin || "";
-  const tifinagh = verbe.tifinagh || lemma;
-  const racine = verbe.racine || "";
-  const groupe = verbe.ConjugationForm || verbe.groupe || "";
+  const tifinagh = verbe.lemma || "";
+  const latin = translitterer(tifinagh);
+  const groupe = verbe.ConjugationForm || "";
 
   let ongletsHTML = "";
   for (const [cle, theme] of Object.entries(THEMES)) {
@@ -510,13 +536,10 @@ function afficherConjugaison(verbe) {
   zone.innerHTML = `
     <div class="carte-verbe">
       <h1>
-        ${latin || lemma}
+        ${latin}
         <span class="tifinagh-titre">${tifinagh}</span>
         ${groupe ? `<span class="badge-groupe">${groupe}</span>` : ""}
       </h1>
-      <div class="racine-info">
-        ${racine ? `Racine : <strong>${racine}</strong>` : ""}
-      </div>
       <div class="onglets">${ongletsHTML}</div>
       <div id="zone-tableau">${tableauHTML}</div>
       <div class="note-ling">
@@ -541,8 +564,8 @@ function afficherConjugaison(verbe) {
 /* =====================================================================
    CONSTRUCTION DU TABLEAU
    ---------------------------------------------------------------------
-   Affiche les 10 personnes avec forme latine et forme tifinagh.
-   Gère plusieurs formats de données possibles.
+   Lit la structure réelle du dataset : les clés sont s1, s2, s3, p1, p2, p3.
+   Le genre est un objet {m: "...", f: "..."}.
    ===================================================================== */
 function construireTableau(verbe, theme) {
   const data = verbe[theme];
@@ -552,41 +575,38 @@ function construireTableau(verbe, theme) {
     </div>`;
   }
 
-  // Détecter si les formes sont organisées par genre
-  const premier = Object.values(data)[0];
-  const aGenre = premier && typeof premier === "object"
-                 && ("m" in premier || "f" in premier);
-
   let lignes = "";
 
   for (const [cle, info] of Object.entries(PERSONNES)) {
-    const forme = data[cle];
-    if (!forme) continue;
+    // Récupérer l'entrée correspondante dans le dataset
+    const entree = data[info.cle];
+    if (!entree) continue;
 
-    let latin = "";
-    let tifinagh = "";
+    let formeTifinagh = "";
 
-    if (aGenre) {
-      // Format { m: "...", f: "..." } — on privilégie le masculin
-      // sauf si la personne est explicitement féminine
-      const cleGenre = (cle.endsWith("f")) ? "f" : "m";
-      latin = forme[cleGenre] || forme.m || forme.f || "";
-      tifinagh = forme[cleGenre] || forme.m || forme.f || "";
-    } else if (typeof forme === "string") {
-      latin = forme;
-      tifinagh = forme;
-    } else if (typeof forme === "object") {
-      latin = forme.latin || forme.m || "";
-      tifinagh = forme.tifinagh || forme.f || forme.m || "";
+    // Gérer les deux cas : objet {m, f} ou chaîne simple
+    if (typeof entree === "object" && entree !== null) {
+      if (info.genre) {
+        // Personne avec distinction de genre
+        formeTifinagh = entree[info.genre] || "";
+      } else {
+        // Personne sans distinction de genre (s1, p1)
+        formeTifinagh = entree.m || entree.f || "";
+      }
+    } else if (typeof entree === "string") {
+      formeTifinagh = entree;
     }
 
-    if (!latin && !tifinagh) continue;
+    if (!formeTifinagh) continue;
+
+    // Générer la translittération latine
+    const formeLatine = translitterer(formeTifinagh);
 
     lignes += `
       <tr>
         <td class="personne">${info.label}</td>
-        <td class="forme-latin">${latin}</td>
-        <td class="forme-tifinagh">${tifinagh}</td>
+        <td class="forme-latin">${formeLatine}</td>
+        <td class="forme-tifinagh">${formeTifinagh}</td>
       </tr>`;
   }
 
