@@ -125,7 +125,7 @@
     padding: 0.7rem 1rem; text-align: left;
     font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px;
   }
-  .tableau-conj th:first-child { width: 28%; }
+  .tableau-conj th:first-child { width: 32%; }
   .tableau-conj td {
     padding: 0.65rem 1rem; border-bottom: 1px solid var(--gris-clair);
     font-size: 0.95rem;
@@ -227,7 +227,7 @@ const THEMES = {
 };
 
 /* =====================================================================
-   LES 10 PERSONNES GRAMMATICALES
+   PERSONNES POUR LES THÈMES STANDARD (aoriste, accompli, etc.)
    ===================================================================== */
 const PERSONNES = {
   "s1":  { label: "1ʳᵉ pers. sing.",      cle: "s1", genre: null },
@@ -240,6 +240,20 @@ const PERSONNES = {
   "p2f": { label: "2ᵉ pers. plur. (f)",   cle: "p2", genre: "f" },
   "p3m": { label: "3ᵉ pers. plur. (m)",   cle: "p3", genre: "m" },
   "p3f": { label: "3ᵉ pers. plur. (f)",   cle: "p3", genre: "f" }
+};
+
+/* =====================================================================
+   PERSONNES POUR L'IMPÉRATIF (structure spécifique)
+   ---------------------------------------------------------------------
+   L'impératif ne concerne que la 2ᵉ personne (tu / vous).
+   Structure du dataset : { s: {m, f}, p: {m1, m2, f} }
+   ===================================================================== */
+const PERSONNES_IMPERATIF = {
+  "s.m":  { label: "2ᵉ pers. sing. (m)",                cle: "s", genre: "m"  },
+  "s.f":  { label: "2ᵉ pers. sing. (f)",                cle: "s", genre: "f"  },
+  "p.m1": { label: "2ᵉ pers. plur. (m) — forme 1",      cle: "p", genre: "m1" },
+  "p.m2": { label: "2ᵉ pers. plur. (m) — forme 2",      cle: "p", genre: "m2" },
+  "p.f":  { label: "2ᵉ pers. plur. (f)",                cle: "p", genre: "f"  }
 };
 
 /* =====================================================================
@@ -264,22 +278,14 @@ function translitterer(texteTifinagh) {
 
 /* =====================================================================
    EXTRACTION DE LA TRADUCTION FRANÇAISE
-   ---------------------------------------------------------------------
-   Le dataset contient un champ "fr" structuré ainsi :
-   "fr": { "fr1": "être loin, éloigné", "fr2": "...", ... }
-   On joint toutes les sous-clés disponibles.
    ===================================================================== */
 function getTraductionFR(verbe) {
   if (!verbe || !verbe.fr) return "";
   if (typeof verbe.fr === "string") return verbe.fr;
-  // Cas d'un objet { fr1, fr2, ... }
   const valeurs = Object.values(verbe.fr).filter(v => typeof v === "string");
   return valeurs.join(" ; ");
 }
 
-/* =====================================================================
-   EXTRACTION DE LA TRADUCTION ARABE (bonus)
-   ===================================================================== */
 function getTraductionAR(verbe) {
   if (!verbe || !verbe.ar) return "";
   if (typeof verbe.ar === "string") return verbe.ar;
@@ -308,6 +314,12 @@ async function chargerDataset() {
       v => v && (v.lemma || v.racine || v.verb)
     );
 
+    // Nettoyage du caractère ° parasite au début des lemmes
+    TOUS_LES_VERBES = TOUS_LES_VERBES.map(v => {
+      if (v.lemma) v.lemma = v.lemma.replace(/^[°\u0000-\u001F\u007F]+/, "").trim();
+      return v;
+    });
+
     VERBES_FILTRES = [...TOUS_LES_VERBES];
     afficherListeIndex();
     mettreAJourCompteur();
@@ -326,7 +338,7 @@ async function chargerDataset() {
 }
 
 /* =====================================================================
-   INDEX — AFFICHAGE AVEC TRADUCTION FRANÇAISE
+   INDEX — AFFICHAGE
    ===================================================================== */
 function afficherListeIndex() {
   const conteneur = document.getElementById("verbe-liste");
@@ -371,7 +383,7 @@ function mettreAJourCompteur() {
 }
 
 /* =====================================================================
-   FILTRAGE — INCLUT LA RECHERCHE PAR TRADUCTION FRANÇAISE
+   FILTRAGE
    ===================================================================== */
 function filtrerVerbes() {
   const requete = document.getElementById("recherche").value
@@ -403,7 +415,7 @@ function selectionnerVerbe(verbe) {
 }
 
 /* =====================================================================
-   AFFICHAGE DE LA CONJUGAISON — AVEC TRADUCTION
+   AFFICHAGE DE LA CONJUGAISON
    ===================================================================== */
 function afficherConjugaison(verbe) {
   const zone = document.getElementById("zone-resultat");
@@ -465,6 +477,9 @@ function afficherConjugaison(verbe) {
 
 /* =====================================================================
    CONSTRUCTION DU TABLEAU
+   ---------------------------------------------------------------------
+   Détecte si le thème est un impératif (structure à 5 formes) ou
+   un thème standard (structure à 10 personnes).
    ===================================================================== */
 function construireTableau(verbe, theme) {
   const data = verbe[theme];
@@ -474,34 +489,56 @@ function construireTableau(verbe, theme) {
     </div>`;
   }
 
+  const estImperatif = (theme === "imp" || theme === "impi");
   let lignes = "";
 
-  for (const [cle, info] of Object.entries(PERSONNES)) {
-    const entree = data[info.cle];
-    if (!entree) continue;
+  if (estImperatif) {
+    // ===== CAS 1 : IMPÉRATIF (5 formes) =====
+    for (const info of Object.values(PERSONNES_IMPERATIF)) {
+      const entree = data[info.cle];
+      if (!entree || typeof entree !== "object") continue;
 
-    let formeTifinagh = "";
+      const formeTifinagh = entree[info.genre] || "";
+      if (!formeTifinagh) continue;
 
-    if (typeof entree === "object" && entree !== null) {
-      if (info.genre) {
-        formeTifinagh = entree[info.genre] || "";
-      } else {
-        formeTifinagh = entree.m || entree.f || "";
-      }
-    } else if (typeof entree === "string") {
-      formeTifinagh = entree;
+      const formeLatine = translitterer(formeTifinagh);
+
+      lignes += `
+        <tr>
+          <td class="personne">${info.label}</td>
+          <td class="forme-latin">${formeLatine}</td>
+          <td class="forme-tifinagh">${formeTifinagh}</td>
+        </tr>`;
     }
+  } else {
+    // ===== CAS 2 : THÈMES STANDARD (10 personnes) =====
+    for (const info of Object.values(PERSONNES)) {
+      const entree = data[info.cle];
+      if (!entree) continue;
 
-    if (!formeTifinagh) continue;
+      let formeTifinagh = "";
 
-    const formeLatine = translitterer(formeTifinagh);
+      if (typeof entree === "object" && entree !== null) {
+        if (info.genre) {
+          formeTifinagh = entree[info.genre] || "";
+        } else {
+          formeTifinagh = entree.m || entree.f || "";
+        }
+      } else if (typeof entree === "string") {
+        formeTifinagh = entree;
+      }
 
-    lignes += `
-      <tr>
-        <td class="personne">${info.label}</td>
-        <td class="forme-latin">${formeLatine}</td>
-        <td class="forme-tifinagh">${formeTifinagh}</td>
-      </tr>`;
+      if (!formeTifinagh) continue;
+
+      const formeLatine = translitterer(formeTifinagh);
+
+      lignes += `
+        <tr>
+          <td class="personne">${info.label}</td>
+          <td class="forme-latin">${formeLatine}</td>
+          <td class="forme-tifinagh">${formeTifinagh}</td>
+        </tr>`;
+    }
   }
 
   if (!lignes) {
