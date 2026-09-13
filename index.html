@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conjugaison Tachelhit — 3000+ Verbes Amazigh</title>
+<title>Conjugaison Tachelhit — Base de données exhaustive</title>
 <style>
   /* ===== Réinitialisation ===== */
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,7 +16,6 @@
     --gris: #333;
     --gris-clair: #e8e8e8;
     --gris-fonce: #555;
-    --vert: #27ae60;
     --tifinagh-font: 'Noto Sans Tifinagh', 'Segoe UI', sans-serif;
   }
 
@@ -30,10 +29,10 @@
     overflow: hidden;
   }
 
-  /* ===== INDEX LATÉRAL (Sidebar) ===== */
+  /* ===== INDEX LATÉRAL ===== */
   #sidebar {
-    width: 320px;
-    min-width: 320px;
+    width: 340px;
+    min-width: 340px;
     background: white;
     border-right: 1px solid var(--gris-clair);
     display: flex;
@@ -48,14 +47,8 @@
     background: var(--bleu);
     color: white;
   }
-  .sidebar-header h2 {
-    font-size: 1.1rem;
-    margin-bottom: 0.2rem;
-  }
-  .sidebar-header p {
-    font-size: 0.8rem;
-    opacity: 0.85;
-  }
+  .sidebar-header h2 { font-size: 1.1rem; margin-bottom: 0.2rem; }
+  .sidebar-header p { font-size: 0.8rem; opacity: 0.85; }
 
   .search-box {
     padding: 0.8rem 1rem;
@@ -70,30 +63,25 @@
     border-radius: 8px;
     transition: border-color 0.2s;
   }
-  .search-box input:focus {
-    outline: none;
-    border-color: var(--bleu);
-  }
+  .search-box input:focus { outline: none; border-color: var(--bleu); }
 
-  /* ===== Liste des verbes (Index) ===== */
+  /* ===== LISTE DES VERBES ===== */
   #verbe-liste {
     flex: 1;
     overflow-y: auto;
     padding: 0.5rem 0;
   }
   #verbe-liste::-webkit-scrollbar { width: 6px; }
-  #verbe-liste::-webkit-scrollbar-thumb {
-    background: #ccc; border-radius: 3px;
-  }
+  #verbe-liste::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
   .verbe-item {
-    padding: 0.6rem 1.2rem;
+    padding: 0.7rem 1.2rem;
     cursor: pointer;
     border-bottom: 1px solid #f5f5f5;
     transition: background 0.15s;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.15rem;
   }
   .verbe-item:hover { background: #f0f6ff; }
   .verbe-item.active {
@@ -101,13 +89,14 @@
     border-left: 4px solid var(--bleu);
     font-weight: 600;
   }
-  .verbe-item .latin {
+  .verbe-item .ligne-latin {
     font-size: 0.95rem;
     color: var(--gris);
+    font-weight: 500;
   }
-  .verbe-item .tifinagh {
+  .verbe-item .ligne-tifinagh {
     font-family: var(--tifinagh-font);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--ocre);
   }
 
@@ -141,9 +130,9 @@
   .accueil h2 { font-size: 1.4rem; color: var(--bleu-fonce); margin-bottom: 0.5rem; }
   .accueil p { max-width: 400px; }
 
-  /* ===== Carte de conjugaison ===== */
+  /* ===== CARTE DE CONJUGAISON ===== */
   .carte-verbe {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
     animation: apparition 0.25s ease;
   }
@@ -181,7 +170,7 @@
     margin-bottom: 1.5rem;
   }
 
-  /* ===== Onglets des thèmes ===== */
+  /* ===== ONGLETS DES THÈMES ===== */
   .onglets {
     display: flex;
     flex-wrap: wrap;
@@ -200,20 +189,12 @@
     color: var(--gris-fonce);
     border-radius: 8px 8px 0 0;
     transition: all 0.2s;
-    position: relative;
   }
   .onglet:hover { background: #f0f6ff; color: var(--bleu); }
-  .onglet.active {
-    background: var(--bleu);
-    color: white;
-  }
-  .onglet .abbr {
-    font-size: 0.7rem;
-    opacity: 0.7;
-    display: block;
-  }
+  .onglet.active { background: var(--bleu); color: white; }
+  .onglet .abbr { font-size: 0.7rem; opacity: 0.7; display: block; }
 
-  /* ===== Tableau de conjugaison ===== */
+  /* ===== TABLEAU DE CONJUGAISON ===== */
   .tableau-conj {
     width: 100%;
     border-collapse: collapse;
@@ -234,7 +215,7 @@
     font-weight: 600;
     letter-spacing: 0.5px;
   }
-  .tableau-conj th:first-child { width: 25%; }
+  .tableau-conj th:first-child { width: 28%; }
   .tableau-conj td {
     padding: 0.65rem 1rem;
     border-bottom: 1px solid var(--gris-clair);
@@ -247,17 +228,13 @@
     color: var(--bleu-fonce);
     font-size: 0.9rem;
   }
-  .tableau-conj td.forme-latin {
-    font-size: 1rem;
-    color: var(--gris);
-  }
+  .tableau-conj td.forme-latin { font-size: 1rem; color: var(--gris); }
   .tableau-conj td.forme-tifinagh {
     font-family: var(--tifinagh-font);
     font-size: 1.05rem;
     color: var(--ocre);
   }
 
-  /* ===== Message d'erreur ===== */
   .message-erreur {
     background: #fdecea;
     border-left: 5px solid #c0392b;
@@ -267,7 +244,6 @@
     margin-top: 1rem;
   }
 
-  /* ===== Note linguistique ===== */
   .note-ling {
     background: #fff8e1;
     border-left: 4px solid #f39c12;
@@ -278,7 +254,6 @@
     border-radius: 6px;
   }
 
-  /* ===== Loading ===== */
   #loading {
     display: flex;
     flex-direction: column;
@@ -297,7 +272,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ===== Responsive ===== */
   @media (max-width: 768px) {
     body { flex-direction: column; }
     #sidebar {
@@ -307,10 +281,7 @@
       border-right: none;
       border-bottom: 1px solid var(--gris-clair);
     }
-    #contenu-principal {
-      height: 55vh;
-      padding: 1rem;
-    }
+    #contenu-principal { height: 55vh; padding: 1rem; }
     .carte-verbe h1 { font-size: 1.3rem; }
     .onglet { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
     .tableau-conj th, .tableau-conj td {
@@ -330,22 +301,14 @@
   </div>
 
   <div class="search-box">
-    <input
-      type="text"
-      id="recherche"
-      placeholder="Rechercher un verbe (latin ou tifinagh)..."
-      autocomplete="off"
-      spellcheck="false"
-    >
+    <input type="text" id="recherche"
+      placeholder="Rechercher (latin ou tifinagh)..."
+      autocomplete="off" spellcheck="false">
   </div>
 
-  <div id="verbe-liste">
-    <!-- Les verbes seront injectés dynamiquement -->
-  </div>
+  <div id="verbe-liste"></div>
 
-  <div class="compteur" id="compteur">
-    Chargement...
-  </div>
+  <div class="compteur" id="compteur">Chargement...</div>
 </aside>
 
 <!-- ===== ZONE PRINCIPALE ===== -->
@@ -354,59 +317,51 @@
     <div class="spinner"></div>
     <p>Chargement de la base de données...</p>
   </div>
-  <div id="zone-resultat" style="display:none;">
-    <!-- Le contenu sera injecté dynamiquement -->
-  </div>
+  <div id="zone-resultat" style="display:none;"></div>
 </main>
 
 <script>
 /* =====================================================================
    CONFIGURATION
-   ---------------------------------------------------------------------
-   Le fichier JSON du dataset doit être placé dans le même dossier
-   que ce fichier HTML. Nom du fichier :
-   "amazigh-conjugation-dataset-v1.0.json"
    ===================================================================== */
 const FICHIER_DATASET = "amazigh-conjugation-dataset-v1.0.json";
 
 /* =====================================================================
    ÉTAT GLOBAL
    ===================================================================== */
-let TOUS_LES_VERBES = [];        // Toutes les entrées du dataset
-let VERBES_FILTRES = [];         // Verbes affichés dans l'index
-let VERBE_ACTIF = null;          // Verbe actuellement sélectionné
-let THEME_ACTIF = "ao";          // Thème actif par défaut
+let TOUS_LES_VERBES = [];
+let VERBES_FILTRES = [];
+let VERBE_ACTIF = null;
+let THEME_ACTIF = "ao";
 
 /* =====================================================================
-   DÉFINITION DES THÈMES
-   ---------------------------------------------------------------------
-   Chaque thème correspond à une clé du dataset JSON.
+   THÈMES VERBAUX
    ===================================================================== */
 const THEMES = {
-  "ao":    { label: "Aoriste",             abbr: "ao"  },
-  "acc":   { label: "Accompli",            abbr: "acc" },
-  "accn":  { label: "Accompli négatif",    abbr: "accn" },
+  "ao":    { label: "Aoriste",             abbr: "ao"    },
+  "acc":   { label: "Accompli",            abbr: "acc"   },
+  "accn":  { label: "Accompli négatif",    abbr: "accn"  },
   "inacc": { label: "Inaccompli",          abbr: "inacc" },
-  "imp":   { label: "Impératif",           abbr: "imp" },
-  "impi":  { label: "Impératif intensif",  abbr: "impi" }
+  "imp":   { label: "Impératif",           abbr: "imp"   },
+  "impi":  { label: "Impératif intensif",  abbr: "impi"  }
 };
 
 /* =====================================================================
-   DÉFINITION DES PERSONNES
+   LES 10 PERSONNES GRAMMATICALES
    ---------------------------------------------------------------------
-   Mapping des clés du dataset vers des libellés français.
+   Le tachelhit distingue le genre à la 2ᵉ et 3ᵉ personne.
    ===================================================================== */
 const PERSONNES = {
-  "s1":  { label: "1ʳᵉ pers. sing.", genre: "" },
-  "s2m": { label: "2ᵉ pers. sing. (m)", genre: "m" },
-  "s2f": { label: "2ᵉ pers. sing. (f)", genre: "f" },
-  "s3m": { label: "3ᵉ pers. sing. (m)", genre: "m" },
-  "s3f": { label: "3ᵉ pers. sing. (f)", genre: "f" },
-  "p1":  { label: "1ʳᵉ pers. plur.", genre: "" },
-  "p2m": { label: "2ᵉ pers. plur. (m)", genre: "m" },
-  "p2f": { label: "2ᵉ pers. plur. (f)", genre: "f" },
-  "p3m": { label: "3ᵉ pers. plur. (m)", genre: "m" },
-  "p3f": { label: "3ᵉ pers. plur. (f)", genre: "f" }
+  "s1":  { label: "1ʳᵉ pers. sing." },
+  "s2m": { label: "2ᵉ pers. sing. (m)" },
+  "s2f": { label: "2ᵉ pers. sing. (f)" },
+  "s3m": { label: "3ᵉ pers. sing. (m)" },
+  "s3f": { label: "3ᵉ pers. sing. (f)" },
+  "p1":  { label: "1ʳᵉ pers. plur." },
+  "p2m": { label: "2ᵉ pers. plur. (m)" },
+  "p2f": { label: "2ᵉ pers. plur. (f)" },
+  "p3m": { label: "3ᵉ pers. plur. (m)" },
+  "p3f": { label: "3ᵉ pers. plur. (f)" }
 };
 
 /* =====================================================================
@@ -418,7 +373,6 @@ async function chargerDataset() {
     if (!reponse.ok) throw new Error(`HTTP ${reponse.status}`);
     const data = await reponse.json();
 
-    // Le dataset peut être un objet ou un tableau
     if (Array.isArray(data)) {
       TOUS_LES_VERBES = data;
     } else if (typeof data === "object") {
@@ -427,7 +381,6 @@ async function chargerDataset() {
       throw new Error("Format de données non reconnu.");
     }
 
-    // Filtrer les entrées valides (avec lemma)
     TOUS_LES_VERBES = TOUS_LES_VERBES.filter(
       v => v && (v.lemma || v.racine || v.verb)
     );
@@ -450,7 +403,9 @@ async function chargerDataset() {
 }
 
 /* =====================================================================
-   AFFICHAGE DE L'INDEX (LISTE DES VERBES)
+   AFFICHAGE DE L'INDEX
+   ---------------------------------------------------------------------
+   Chaque entrée affiche la forme latine ET la forme tifinagh.
    ===================================================================== */
 function afficherListeIndex() {
   const conteneur = document.getElementById("verbe-liste");
@@ -464,13 +419,13 @@ function afficherListeIndex() {
     }
     div.dataset.index = index;
 
-    const lemma = verbe.lemma || verbe.racine || "?";
-    const latin = verbe.latin || verbe.transliteration || "";
+    // Récupération des formes pour l'index
+    const latin = verbe.latin || verbe.transliteration || verbe.lemma || "?";
     const tifinagh = verbe.tifinagh || verbe.lemma || "";
 
     div.innerHTML = `
-      <span class="latin">${latin || lemma}</span>
-      <span class="tifinagh">${tifinagh}</span>
+      <span class="ligne-latin">${latin}</span>
+      <span class="ligne-tifinagh">${tifinagh}</span>
     `;
 
     div.addEventListener("click", () => selectionnerVerbe(verbe));
@@ -494,7 +449,7 @@ function mettreAJourCompteur() {
 }
 
 /* =====================================================================
-   FILTRAGE DE L'INDEX
+   FILTRAGE
    ===================================================================== */
 function filtrerVerbes() {
   const requete = document.getElementById("recherche").value
@@ -512,7 +467,6 @@ function filtrerVerbes() {
           || racine.includes(requete) || tifinagh.includes(requete);
     });
   }
-
   afficherListeIndex();
 }
 
@@ -521,16 +475,9 @@ function filtrerVerbes() {
    ===================================================================== */
 function selectionnerVerbe(verbe) {
   VERBE_ACTIF = verbe;
-  THEME_ACTIF = "ao"; // Réinitialiser au thème par défaut
-
-  // Mettre à jour la classe active dans l'index
-  document.querySelectorAll(".verbe-item").forEach(el => {
-    el.classList.remove("active");
-  });
-
+  THEME_ACTIF = "ao";
+  document.querySelectorAll(".verbe-item").forEach(el => el.classList.remove("active"));
   afficherConjugaison(verbe);
-
-  // Scroll vers le haut de la zone principale
   document.getElementById("contenu-principal").scrollTop = 0;
 }
 
@@ -546,12 +493,10 @@ function afficherConjugaison(verbe) {
   const racine = verbe.racine || "";
   const groupe = verbe.ConjugationForm || verbe.groupe || "";
 
-  // Construire les onglets
   let ongletsHTML = "";
   for (const [cle, theme] of Object.entries(THEMES)) {
-    const actif = cle === THEME_ACTIF ? "active" : "";
-    // Vérifier si le verbe possède ce thème
     if (verbe[cle]) {
+      const actif = cle === THEME_ACTIF ? "active" : "";
       ongletsHTML += `
         <button class="onglet ${actif}" data-theme="${cle}">
           ${theme.label}
@@ -560,7 +505,6 @@ function afficherConjugaison(verbe) {
     }
   }
 
-  // Construire le tableau pour le thème actif
   const tableauHTML = construireTableau(verbe, THEME_ACTIF);
 
   zone.innerHTML = `
@@ -573,15 +517,8 @@ function afficherConjugaison(verbe) {
       <div class="racine-info">
         ${racine ? `Racine : <strong>${racine}</strong>` : ""}
       </div>
-
-      <div class="onglets">
-        ${ongletsHTML}
-      </div>
-
-      <div id="zone-tableau">
-        ${tableauHTML}
-      </div>
-
+      <div class="onglets">${ongletsHTML}</div>
+      <div id="zone-tableau">${tableauHTML}</div>
       <div class="note-ling">
         ⚠️ <strong>Note :</strong> Cette base de données est issue du
         <em>Manuel de conjugaison amazighe</em> (IRCAM, 2012) et du
@@ -590,14 +527,11 @@ function afficherConjugaison(verbe) {
       </div>
     </div>`;
 
-  // Écouteurs sur les onglets
   zone.querySelectorAll(".onglet").forEach(btn => {
     btn.addEventListener("click", () => {
       THEME_ACTIF = btn.dataset.theme;
-      // Mettre à jour l'onglet actif
       zone.querySelectorAll(".onglet").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      // Mettre à jour le tableau
       document.getElementById("zone-tableau").innerHTML =
         construireTableau(verbe, THEME_ACTIF);
     });
@@ -605,7 +539,10 @@ function afficherConjugaison(verbe) {
 }
 
 /* =====================================================================
-   CONSTRUCTION DU TABLEAU DE CONJUGAISON
+   CONSTRUCTION DU TABLEAU
+   ---------------------------------------------------------------------
+   Affiche les 10 personnes avec forme latine et forme tifinagh.
+   Gère plusieurs formats de données possibles.
    ===================================================================== */
 function construireTableau(verbe, theme) {
   const data = verbe[theme];
@@ -615,13 +552,14 @@ function construireTableau(verbe, theme) {
     </div>`;
   }
 
-  // Détecter le format : { s1: {m, f}, ... } ou { s1: "...", ... }
+  // Détecter si les formes sont organisées par genre
   const premier = Object.values(data)[0];
-  const aGenre = premier && typeof premier === "object" && ("m" in premier || "f" in premier);
+  const aGenre = premier && typeof premier === "object"
+                 && ("m" in premier || "f" in premier);
 
   let lignes = "";
 
-  for (const [cle, label] of Object.entries(PERSONNES)) {
+  for (const [cle, info] of Object.entries(PERSONNES)) {
     const forme = data[cle];
     if (!forme) continue;
 
@@ -629,22 +567,24 @@ function construireTableau(verbe, theme) {
     let tifinagh = "";
 
     if (aGenre) {
-      // Format { m: "...", f: "..." }
-      latin = forme.m || forme.f || "";
-      tifinagh = forme.m || forme.f || "";
+      // Format { m: "...", f: "..." } — on privilégie le masculin
+      // sauf si la personne est explicitement féminine
+      const cleGenre = (cle.endsWith("f")) ? "f" : "m";
+      latin = forme[cleGenre] || forme.m || forme.f || "";
+      tifinagh = forme[cleGenre] || forme.m || forme.f || "";
     } else if (typeof forme === "string") {
       latin = forme;
       tifinagh = forme;
     } else if (typeof forme === "object") {
       latin = forme.latin || forme.m || "";
-      tifinagh = forme.tifinagh || forme.f || "";
+      tifinagh = forme.tifinagh || forme.f || forme.m || "";
     }
 
     if (!latin && !tifinagh) continue;
 
     lignes += `
       <tr>
-        <td class="personne">${label.label}</td>
+        <td class="personne">${info.label}</td>
         <td class="forme-latin">${latin}</td>
         <td class="forme-tifinagh">${tifinagh}</td>
       </tr>`;
@@ -673,8 +613,7 @@ function construireTableau(verbe, theme) {
    ACCUEIL
    ===================================================================== */
 function afficherAccueil() {
-  const zone = document.getElementById("zone-resultat");
-  zone.innerHTML = `
+  document.getElementById("zone-resultat").innerHTML = `
     <div class="accueil">
       <div class="icone">📖</div>
       <h2>Sélectionnez un verbe dans l'index</h2>
@@ -687,11 +626,10 @@ function afficherAccueil() {
 }
 
 /* =====================================================================
-   ÉCOUTEURS D'ÉVÉNEMENTS
+   ÉCOUTEURS
    ===================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
   chargerDataset();
-
   const input = document.getElementById("recherche");
   let timeout;
   input.addEventListener("input", () => {
