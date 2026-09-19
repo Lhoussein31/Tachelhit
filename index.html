@@ -826,6 +826,20 @@ function fermerSidebar() {
 document.addEventListener("DOMContentLoaded", () => {
   chargerDataset();
 
+  // ===== OUVERTURE AUTOMATIQUE DE LA SIDEBAR SUR MOBILE =====
+  // Permet d'afficher immédiatement le champ de recherche à l'ouverture
+  if (window.matchMedia("(max-width: 900px)").matches) {
+    setTimeout(() => {
+      ouvrirSidebar();
+      // Focus après la fin de l'animation du drawer (280ms) pour
+      // laisser la transition se terminer avant d'afficher le clavier
+      setTimeout(() => {
+        const champ = document.getElementById("recherche");
+        champ.focus({ preventScroll: true });
+      }, 320);
+    }, 100);
+  }
+
   const input = document.getElementById("recherche");
   let timeout;
   input.addEventListener("input", () => {
